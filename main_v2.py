@@ -190,11 +190,17 @@ class Converter:
         if self.check_input():
             input_int = self.check_input()
             input_vars = self.read_inputs(input_int)
-            #base = self.input_to_base(input_vars)
-            #output = self.base_to_output(input_vars, base)
             base = self.base_conversion(input_vars, None, "input_to_base")
             output = self.base_conversion(input_vars, base, "base_to_output")
-            print(output)
+            self.output_response(output)
+
+    # Function to output response to the user and history
+    def output_response(self, output):
+        # Display output to the user
+        self.output_entry.config(state=NORMAL)
+        self.output_entry.delete(0, "end")
+        self.output_entry.insert(0, output)
+        self.output_entry.config(state="readonly")
 
     # Function to switch lists between types
     def switch_lists(self, new_type):
