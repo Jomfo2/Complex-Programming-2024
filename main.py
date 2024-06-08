@@ -92,6 +92,7 @@ class Converter:
                                             font=("Arial", "10"), width=12)
         self.history_export_button.grid(row=0, column=1, padx=5, pady=5)
 
+    # Checks input to make sure it's a number
     def check_input(self):
         # try convert input_entry to float
         # breaks when it doesn't work
@@ -102,20 +103,24 @@ class Converter:
         except ValueError:
             print("Please enter an integer")
 
+    # Reads all relevant inputs and stores them in variables for easy use
     def read_inputs(self):
         # Read Inputted Info
-        self.input_units = self.selected_input.get()
-        self.output_units = self.selected_output.get()
+        input_units = self.selected_input.get()
+        output_units = self.selected_output.get()
 
-        self.input_int = self.check_input()
+        input_int = self.check_input()
         # Checks if self.input is a number or 0
-        if self.input_int or self.input_int == 0:
-            print("Converting {} {} to {}".format(self.input_int, self.input_units, self.output_units))
+        if input_int or input_int == 0:
+            print("Converting {} {} to {}".format(input_int, input_units, output_units))
+        return [input_int, input_units, output_units]
 
+    # Main function triggered when converting
     def convert(self):
         # Collect all relevant info and put them in variables for easy use
-        self.read_inputs()
+        input_vars = self.read_inputs()
 
+    # Function to switch lists between types
     def switch_lists(self, new_type):
         self.dropdown_input["menu"].delete(0, "end")
         self.dropdown_output["menu"].delete(0, "end")
