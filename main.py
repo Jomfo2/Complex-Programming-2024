@@ -4,8 +4,8 @@ class Converter:
     def __init__(self):
         # *** Options ***
         self.time_options = ["Milliseconds", "Seconds", "Minutes", "Hours", "Days", "Weeks", "Years"]
-        self.distance_options = ["Centimeters", "Meters", "Kilometers", "Inches", "Feet", "Yards"]
-        self.weight_options = ["Grams", "Kilograms", "Ounces", "Pounds", "Tonnes", "Tons"]
+        self.distance_options = ["Millimeters", "Centimeters", "Meters", "Kilometers", "Inches", "Feet", "Yards", "Miles"]
+        self.weight_options = ["Grams", "Kilograms", "Metric Tons","Ounces", "Pounds", "Tons", "Tonnes"]
 
         # Use and change this list
         self.current_options = self.distance_options
@@ -59,7 +59,8 @@ class Converter:
         self.dropdown_output.grid(row=1, column=0, padx=5, pady=5)
 
         # Text Entry Output
-        self.output_entry = Entry(self.entry_frame, font=("Arial", "12"))
+        self.output_entry = Entry(self.entry_frame, font=("Arial", "12"),
+                                  state="readonly")
         self.output_entry.grid(row=1, column=1, padx=5, pady=5)
 
         # ** Type / Convert Section **
@@ -104,21 +105,72 @@ class Converter:
             print("Please enter an integer")
 
     # Reads all relevant inputs and stores them in variables for easy use
-    def read_inputs(self):
+    def read_inputs(self, input_int):
         # Read Inputted Info
         input_units = self.selected_input.get()
         output_units = self.selected_output.get()
-
-        input_int = self.check_input()
+        unit_type = self.selected_type.get()
+        
         # Checks if self.input is a number or 0
         if input_int or input_int == 0:
             print("Converting {} {} to {}".format(input_int, input_units, output_units))
-        return [input_int, input_units, output_units]
+        return [input_int, input_units, output_units, unit_type]
+
+    # Converts from the user's input to a 'base' variable
+    def input_to_base(self, input_vars):
+        input = input_vars[0] # int input
+        input_unit = input_vars[1] # input unit
+        unit_type = input_vars[3] # unit type
+        base = 0
+
+        match unit_type:
+            # If time units, convert to seconds
+            case "Time":
+                match input_unit:
+                    case "Milliseconds": base = input * 0.001
+                    case "Seconds":      base = input
+                    case "Minutes":      base = input * 60
+                    case "Hours":        base = input * 3600
+                    case "Days":         base = input * 86400
+                    case "Weeks":        base = input * 604800
+                    case "Years":        base = input * 31556952
+                    case _: print("Error converting input to seconds")
+            # If distance units, convert to meters
+            case "Distance":
+                match input_unit:
+                    case "Millimeters":  base = input * 0.001
+                    case "Centimeters":  base = input * 0.01
+                    case "Meters":       base = input
+                    case "Kilometers":   base = input * 1000
+                    case "Inches":       base = input * 0.0254
+                    case "Feet":         base = input * 0.3048
+                    case "Yards":        base = input * 0.9144
+                    case "Miles":        base = input * 1609.34
+                    case _: print("Error converting input to meters")
+            # If weight units, convert to kilograms
+            case "Weight":
+                match input_unit:
+                    case "Grams":       base = input * 0.0001
+                    case "Kilograms":   base = input
+                    case "Metric Tons": base = input * 1000
+                    case "Ounces":      base = input * 0.0283
+                    case "Pounds":      base = input * 0.4536
+                    case "Tons":        base = input * 907.185
+                    case "Tonnes":      base = input * 1016.05
+                    case _: print("Error converting input to kilograms")
+            # If other unit type, print error message
+            case _:
+                print("Error with unit_type")
+
+        print(base)
 
     # Main function triggered when converting
     def convert(self):
         # Collect all relevant info and put them in variables for easy use
-        input_vars = self.read_inputs()
+        if self.check_input():
+            input_int = self.check_input()
+            input_vars = self.read_inputs(input_int)
+            self.input_to_base(input_vars)
 
     # Function to switch lists between types
     def switch_lists(self, new_type):
