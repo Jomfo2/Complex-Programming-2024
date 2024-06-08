@@ -3,15 +3,21 @@ from tkinter import *
 class Converter:
     def __init__(self):
         # *** Options ***
-        self.options = ["Centimeters", "Meters", "Kilometers", "Inches", "Feet", "Yards"]
+        self.time_options = ["Milliseconds", "Seconds", "Minutes", "Hours", "Days", "Weeks", "Years"]
+        self.distance_options = ["Centimeters", "Meters", "Kilometers", "Inches", "Feet", "Yards"]
+        self.weight_options = ["Grams", "Kilograms", "Ounces", "Pounds", "Tonnes", "Tons"]
+
+        # Use and change this list
+        self.current_options = self.distance_options
+
         self.unit_types = ["Time", "Distance", "Weight"]
 
         # Variables for storing desired input and output units
         self.selected_input = StringVar()
-        self.selected_input.set(self.options[1])
+        self.selected_input.set(self.current_options[1])
 
         self.selected_output = StringVar()
-        self.selected_output.set(self.options[4])
+        self.selected_output.set(self.current_options[3])
 
         self.selected_type = StringVar()
         self.selected_type.set(self.unit_types[1])
@@ -39,7 +45,7 @@ class Converter:
         self.entry_frame.grid(row=2)
 
         # Input Type Selector
-        self.dropdown_input = OptionMenu(self.entry_frame, self.selected_input, *self.options)
+        self.dropdown_input = OptionMenu(self.entry_frame, self.selected_input, *self.current_options)
         self.dropdown_input.config(width=20)
         self.dropdown_input.grid(row=0, column=0, padx=5, pady=5)
 
@@ -48,7 +54,7 @@ class Converter:
         self.input_entry.grid(row=0, column=1, padx=5, pady=5)
 
         # Output Type Selector
-        self.dropdown_output = OptionMenu(self.entry_frame, self.selected_output, *self.options)
+        self.dropdown_output = OptionMenu(self.entry_frame, self.selected_output, *self.current_options)
         self.dropdown_output.config(width=20)
         self.dropdown_output.grid(row=1, column=0, padx=5, pady=5)
 
@@ -61,7 +67,8 @@ class Converter:
         self.type_convert_frame.grid(row=3)
 
         # Unit Type Selector
-        self.type_selector = OptionMenu(self.type_convert_frame, self.selected_type, *self.unit_types)
+        self.type_selector = OptionMenu(self.type_convert_frame, self.selected_type, *self.unit_types,
+                                        command=self.switch_lists)
         self.type_selector.config(width=10, font=("Arial", "10"))
         self.type_selector.grid(row=0, column=0, padx=5, pady=5)
 
@@ -85,15 +92,55 @@ class Converter:
                                             font=("Arial", "10"), width=12)
         self.history_export_button.grid(row=0, column=1, padx=5, pady=5)
 
+    def check_input(self):
+        # try convert input_entry to float
+        # breaks when it doesn't work
+        try:
+            input_int = float(self.input_entry.get())
+            return input_int
+
+        except ValueError:
+            print("Please enter an integer")
+
     def read_inputs(self):
         # Read Inputted Info
         self.input_units = self.selected_input.get()
         self.output_units = self.selected_output.get()
-        self.input_int = self.input_entry.get()
-        print("Converting {} {} to {}".format(self.input_int, self.input_units, self.output_units))
+
+        self.input_int = self.check_input()
+        # Checks if self.input is a number or 0
+        if self.input_int or self.input_int == 0:
+            print("Converting {} {} to {}".format(self.input_int, self.input_units, self.output_units))
 
     def convert(self):
+        # Collect all relevant info and put them in variables for easy use
         self.read_inputs()
+
+    def switch_lists(self, new_type):
+        self.dropdown_input["menu"].delete(0, "end")
+        self.dropdown_output["menu"].delete(0, "end")
+
+        # Switch/Match statement to choose function based on input
+        match new_type:
+            case "Time":
+                self.current_options = self.time_options
+            case "Distance":
+                self.current_options = self.distance_options
+            case "Weight":
+                self.current_options = self.weight_options
+
+            # if no other cases are met
+            case _:
+                print("Exception: Chosen list is not applicable")
+
+        # For loop code supplied by ChatGPT
+        for item in self.current_options:
+            self.dropdown_input["menu"].add_command(label=item, command=lambda value=item: self.selected_input.set(value))
+            self.dropdown_output["menu"].add_command(label=item, command=lambda value=item: self.selected_input.set(value))
+
+        self.selected_input.set(self.current_options[1])
+        self.selected_output.set(self.current_options[4])
+
 
 
 # main routine
