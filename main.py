@@ -110,7 +110,7 @@ class Converter:
         input_units = self.selected_input.get()
         output_units = self.selected_output.get()
         unit_type = self.selected_type.get()
-        
+
         # Checks if self.input is a number or 0
         if input_int or input_int == 0:
             print("Converting {} {} to {}".format(input_int, input_units, output_units))
@@ -160,9 +160,56 @@ class Converter:
                     case _: print("Error converting input to kilograms")
             # If other unit type, print error message
             case _:
-                print("Error with unit_type")
+                print("Error converting to unit_type")
 
-        print(base)
+        return base
+
+    # Converts from the user's input to a 'base' variable
+    def base_to_output(self, input_vars, base):
+        output_unit = input_vars[2] # input unit
+        unit_type = input_vars[3] # unit type
+        output = 0
+
+        match unit_type:
+            # If time units, convert to seconds
+            case "Time":
+                match output_unit:
+                    case "Milliseconds": output = base / 0.001
+                    case "Seconds":      output = base
+                    case "Minutes":      output = base / 60
+                    case "Hours":        output = base / 3600
+                    case "Days":         output = base / 86400
+                    case "Weeks":        output = base / 604800
+                    case "Years":        output = base / 31556952
+                    case _: print("Error converting input to seconds")
+            # If distance units, convert to meters
+            case "Distance":
+                match output_unit:
+                    case "Millimeters":  output = base / 0.001
+                    case "Centimeters":  output = base / 0.01
+                    case "Meters":       output = base
+                    case "Kilometers":   output = base / 1000
+                    case "Inches":       output = base / 0.0254
+                    case "Feet":         output = base / 0.3048
+                    case "Yards":        output = base / 0.9144
+                    case "Miles":        output = base / 1609.34
+                    case _: print("Error converting input to meters")
+            # If weight units, convert to kilograms
+            case "Weight":
+                match output_unit:
+                    case "Grams":       output = input / 0.0001
+                    case "Kilograms":   output = input
+                    case "Metric Tons": output = input / 1000
+                    case "Ounces":      output = input / 0.0283
+                    case "Pounds":      output = input / 0.4536
+                    case "Tons":        output = input / 907.185
+                    case "Tonnes":      output = input / 1016.05
+                    case _: print("Error converting input to kilograms")
+            # If other unit type, print error message
+            case _:
+                print("Error converting to unit_type")
+
+        return output
 
     # Main function triggered when converting
     def convert(self):
@@ -170,7 +217,9 @@ class Converter:
         if self.check_input():
             input_int = self.check_input()
             input_vars = self.read_inputs(input_int)
-            self.input_to_base(input_vars)
+            base = self.input_to_base(input_vars)
+            output = self.base_to_output(input_vars, base)
+            print(output)
 
     # Function to switch lists between types
     def switch_lists(self, new_type):
