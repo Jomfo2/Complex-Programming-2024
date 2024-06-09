@@ -1,5 +1,7 @@
 from tkinter import *
-from functools import partial
+from tkinter import *
+from functools import partial # to prevent unwanted windows
+import re # to easily check strings
 
 class Converter:
     def __init__(self):
@@ -97,7 +99,8 @@ class Converter:
 
         # History/Export Button
         self.history_export_button = Button(self.help_history_frame, text="History / Export",
-                                            font=("Arial", "10"), width=12)
+                                            font=("Arial", "10"), width=12,
+                                            command=self.to_history_window)
         self.history_export_button.grid(row=0, column=1, padx=5, pady=5)
 
     # Checks input to make sure it's a number
@@ -281,6 +284,10 @@ class Converter:
     def to_help_window(self):
         HelpWindow(self)
 
+    # Open History window
+    def to_history_window(self):
+        HistWindow(self)
+
 class HelpWindow:
     def __init__(self, partner):
         # Options
@@ -326,6 +333,109 @@ class HelpWindow:
         # Put help button back to normal
         partner.help_button.config(state=NORMAL)
         self.help_box.destroy()
+
+class HistWindow:
+    def __init__(self, partner):
+        # Options
+        self.hist_box = Toplevel()
+
+        # Disable History / Export button
+        partner.history_export_button.config(state=DISABLED)
+
+        # Enable History button when window closed
+        self.hist_box.protocol('WM_DELETE_WINDOW', partial(self.close_history, partner))
+
+        # Setup GUI Frame
+        self.hist_frame = Frame(self.hist_box, width=300,
+                                height=200)
+        self.hist_frame.grid()
+
+        # Heading Label
+        self.hist_heading_label = Label(self.hist_frame, text="History / Export",
+                                        font=("Arial", "14", "bold"))
+        self.hist_heading_label.grid(row=0)
+
+        # File name entry
+        self.filename_entry = Entry(self.hist_frame, font=("Arial", "14"),
+                                    width=25)
+        self.filename_entry.grid(row=1)
+
+        # History Export Text
+        hist_text = "You can export your history using the 'Export' button at the bottom of the page. It will be saved " \
+                    "with the name entered above or a name automatically chosen. \n\n" \
+                    "Below are the inputs and outputs for all of your calculations. All outputs rounded to up to 5dp"
+        self.hist_text_label = Label(self.hist_frame, text=hist_text,
+                                     wraplength=350, justify="left")
+        self.hist_text_label.grid(row=2, padx=10)
+
+        # History Label
+        self.history_display = Label(self.hist_frame, font=("Arial", "10"),
+                                     width=40, justify="left",
+                                     text="You haven't done any conversions yet...", bg="gray",
+                                     fg="white")
+        self.history_display.grid(row=3)
+
+        # Feedback Label
+        self.feedback_label = Label(self.hist_frame, font=("Arial", "14", "bold"),
+                                    width=40, justify="center")
+        self.feedback_label.grid(row=4)
+
+        # *** Button Frame ***
+        self.button_frame = Frame(self.hist_frame)
+        self.button_frame.grid(row=5)
+
+        # Close Button
+        self.close_button = Button(self.button_frame, font=("Arial", "10", "bold"),
+                                   text="Close", command=partial(self.close_history, partner))
+        self.close_button.grid(row=0, column=0, padx=10, pady=10)
+
+        # Export Button
+        self.export_button = Button(self.button_frame, font=("Arial", "10", "bold"),
+                                   text="Export", command=lambda: self.export_history(partner))
+        self.export_button.grid(row=0, column=1, padx=10, pady=10)
+
+        # **** Display History ****
+        self.calc_list = ""
+        if partner.history_list:
+            for item in partner.history_list:
+                self.calc_list = self.calc_list + item + '\n'
+            self.history_display.config(text=self.calc_list)
+
+    # Function to check the validity of a filename
+    @staticmethod
+    def check_filename(filename):
+        # Define a regex pattern for valid filenames (alphanumeric and underscore)
+        pattern = r'^[\w\-. ]+$'
+        if not filename or not re.match(pattern, filename):
+            return False
+        return True
+
+    # Function to export history
+    def export_history(self, partner):
+        # Only try if filename has characters
+        if self.filename_entry.get() == "":
+            filename = "save"
+        else:
+            filename = self.filename_entry.get()
+        # Only continue if filename is valid
+        if self.check_filename(filename):
+            # Open a file in write mode ('w')
+            open_file_name = filename + '.txt'
+            try:
+                with open(open_file_name, 'w') as file:
+                    file.write("Measurement Converter Exported History \n")
+                    for item in partner.history_list:
+                        file.write('   ' + item + '\n')
+                self.feedback_label.config(text="Successfully Saved to {}".format(open_file_name))
+            except NotADirectoryError:
+                self.feedback_label.config(text="File Exists Error")
+
+
+    # Function to close help dialogue
+    def close_history(self, partner):
+        # Put help button back to normal
+        partner.history_export_button.config(state=NORMAL)
+        self.hist_box.destroy()
 
 
 # main routine
