@@ -103,6 +103,10 @@ class Converter:
                                             command=self.to_history_window)
         self.history_export_button.grid(row=0, column=1, padx=5, pady=5)
 
+        # Feedback Label
+        self.feedback_label = Label(self.converter_frame, font=("Arial", "12"))
+        self.feedback_label.grid(row=5)
+
     # Checks input to make sure it's a number
     def check_input(self):
         # try convert input_entry to float
@@ -112,7 +116,7 @@ class Converter:
             return input_int
 
         except ValueError:
-            print("Please enter an integer")
+            self.feedback_label.config(text="Please enter an integer")
 
     # Reads all relevant inputs and stores them in variables for easy use
     def read_inputs(self, input_int):
@@ -123,8 +127,7 @@ class Converter:
 
         # Checks if self.input is a number or 0
         if input_int or input_int == 0:
-            print("Converting {} {} to {}".format(input_int, input_units, output_units))
-        return [input_int, input_units, output_units, unit_type]
+            return [input_int, input_units, output_units, unit_type]
 
     # Function to round input to 2dp
     @staticmethod
@@ -252,7 +255,7 @@ class Converter:
         self.formatted_output = "Converted {} {} to {} {}".format(input_vars[0], input_vars[1],
                                                                    output, input_vars[2])
         self.history_list.append(self.formatted_output)
-        print(self.history_list)
+        self.feedback_label.config(text="Successful Calculation")
 
     # Function to switch lists between types
     def switch_lists(self, new_type):
