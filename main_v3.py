@@ -3,6 +3,9 @@ from functools import partial
 
 class Converter:
     def __init__(self):
+        # Variables
+        self.history_list = []
+
         # *** Options ***
         self.time_options = ["Milliseconds", "Seconds", "Minutes", "Hours", "Days", "Weeks", "Years"]
         self.distance_options = ["Millimeters", "Centimeters", "Meters", "Kilometers", "Inches", "Feet", "Yards", "Miles"]
@@ -123,10 +126,10 @@ class Converter:
     # Function to round input to 2dp
     @staticmethod
     def round_number(num, sfs):
-        if sfs < 6:
-            num_rounded = round(num, sfs)  # Round input to 2dp
+        if sfs < 3:
+            num_rounded = round(num, sfs)  # Round input to sfs dp
         else:
-            num_rounded = round(num, 6)  # Round input to 2dp
+            num_rounded = round(num, 3)  # Round input to 6dp
         return num_rounded
 
     # Function to count significant figures in a number
@@ -232,15 +235,21 @@ class Converter:
             # Round output to significant figures
             significant_figures = self.count_significant_figures(output)
             rounded_output = self.round_number(output, significant_figures)
-            self.output_response(rounded_output)
+            self.output_response(rounded_output, input_vars)
 
     # Function to output response to the user and history
-    def output_response(self, output):
+    def output_response(self, output, input_vars):
         # Display output to the user
         self.output_entry.config(state=NORMAL)
         self.output_entry.delete(0, "end")
         self.output_entry.insert(0, output)
         self.output_entry.config(state=DISABLED)
+
+        # Store output for history / export
+        self.formatted_output = "Converted {} {} to {} {}".format(input_vars[0], input_vars[1],
+                                                                   output, input_vars[2])
+        self.history_list.append(self.formatted_output)
+        print(self.history_list)
 
     # Function to switch lists between types
     def switch_lists(self, new_type):
@@ -302,7 +311,7 @@ class HelpWindow:
                     "The dropdown on the third line changes the type of measurement converted (e.g. time, weight, " \
                     "distance) and the 'Convert' button converts the input to the output. You can see your history of " \
                     "conversions and export it to a file with the 'History / Export' Button. \n\n" \
-                    "Note that the output will be rounded to 6dp if it is a long number"
+                    "Note that the output will be rounded to 3dp if it is a very small number, this includes 0"
         self.help_text_label = Label(self.help_frame, text=help_text,
                                      wraplength=350, justify="left")
         self.help_text_label.grid(row=1, padx=10)
