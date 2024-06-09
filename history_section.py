@@ -1,5 +1,6 @@
 from tkinter import *
-from functools import partial
+from functools import partial # to prevent unwanted windows
+import re # to easily check strings
 
 class Converter:
     def __init__(self):
@@ -144,9 +145,14 @@ class HistWindow:
                                      fg="white")
         self.history_display.grid(row=3)
 
+        # Feedback Label
+        self.feedback_label = Label(self.hist_frame, font=("Arial", "14", "bold"),
+                                    width=40, justify="center")
+        self.feedback_label.grid(row=4)
+
         # *** Button Frame ***
         self.button_frame = Frame(self.hist_frame)
-        self.button_frame.grid(row=4)
+        self.button_frame.grid(row=5)
 
         # Close Button
         self.close_button = Button(self.button_frame, font=("Arial", "10", "bold"),
@@ -155,7 +161,7 @@ class HistWindow:
 
         # Export Button
         self.export_button = Button(self.button_frame, font=("Arial", "10", "bold"),
-                                   text="Export", command=self.export_history)
+                                   text="Export", command=lambda: self.export_history(partner))
         self.export_button.grid(row=0, column=1, padx=10, pady=10)
 
         # **** Display History ****
@@ -164,9 +170,35 @@ class HistWindow:
             self.calc_list = self.calc_list + item + '\n'
         self.history_display.config(text=self.calc_list)
 
+    # Function to check the validity of a filename
+    @staticmethod
+    def check_filename(filename):
+        # Define a regex pattern for valid filenames (alphanumeric and underscore)
+        pattern = r'^[\w\-. ]+$'
+        if not filename or not re.match(pattern, filename):
+            return False
+        return True
+
     # Function to export history
-    def export_history(self):
-        pass
+    def export_history(self, partner):
+        # Only try if filename has characters
+        if self.filename_entry.get() == "":
+            filename = "save"
+        else:
+            filename = self.filename_entry.get()
+        # Only continue if filename is valid
+        if self.check_filename(filename):
+            # Open a file in write mode ('w')
+            open_file_name = filename + '.txt'
+            try:
+                with open(open_file_name, 'w') as file:
+                    file.write("Measurement Converter Exported History \n")
+                    for item in partner.example_hist:
+                        file.write('   ' + item + '\n')
+                self.feedback_label.config(text="Successfully Saved to {}".format(open_file_name))
+            except NotADirectoryError:
+                self.feedback_label.config(text="File Exists Error")
+
 
     # Function to close help dialogue
     def close_history(self, partner):
